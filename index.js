@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -42,6 +42,39 @@ async function run() {
       const task = req.body;
       console.log(task);
       const result = await taskCollection.insertOne(task);
+      res.send(result);
+    });
+
+    // get :: show-task
+    app.get("/api/v1/:taskId/show-task", async (req, res) => {
+      const taskId = req.params.taskId;
+      const query = { _id: new ObjectId(taskId) };
+      const result = await taskCollection.findOne(query);
+      res.send(result);
+    });
+
+    //  delete :: delete task
+    app.delete("/api/v1/:taskId/delete-task", async (req, res) => {
+      const taskId = req.params.taskId;
+      const query = { _id: new ObjectId(taskId) };
+      const result = await taskCollection.deleteOne(query);
+      res.send(result);
+    });
+    //  patch :: edit-task
+    app.patch("/api/v1/:taskId/edit-task", async (req, res) => {
+      const taskData = req.body;
+      const taskId = req.params.taskId;
+      const query = { _id: new ObjectId(taskId) };
+      const editTask = {
+        $set: {
+          title: taskData.title,
+          category: taskData.category,
+          date: taskData.date,
+          description: taskData.description,
+          userEmail: taskData.userEmail,
+        },
+      };
+      const result = await taskCollection.updateOne(query, editTask);
       res.send(result);
     });
 
